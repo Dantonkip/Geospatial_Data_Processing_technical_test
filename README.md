@@ -10,7 +10,7 @@ This task utilizes Google Earth Engine (GEE) to process and analyze geospatial d
 
 3. Computing vegetation indices (NDVI)
 
-4. Resampling datasets to a uniform spatial resolution
+4. Resampling datasets to the highest uniform spatial resolution
 
 5. Stacking multiple geospatial layers into a single datacube
 
@@ -63,7 +63,7 @@ end_date = ee.Date.fromYMD(2025, 2, 25)
 
 ### 4. Load and Process Satellite Datasets
 
-Sentinel-1 (Radar Data)
+#### Sentinel-1 (Radar Data)
 
 Filter by AOI, date, and polarization mode:
 
@@ -76,7 +76,7 @@ sentinel1 = (ee.ImageCollection("COPERNICUS/S1_GRD")
     .mean()
     .clip(aoi))
 
-Sentinel-2 (Optical Data & NDVI Calculation)
+#### Sentinel-2 (Optical Data & NDVI Calculation)
 
 Extract cloud-free optical imagery and compute NDVI:
 
@@ -89,7 +89,7 @@ sentinel2 = (ee.ImageCollection("COPERNICUS/S2_SR")
 
 ndvi = sentinel2.normalizedDifference(["B8", "B4"]).rename("NDVI").toFloat()
 
-MODIS Land Surface Temperature (LST)
+#### MODIS Land Surface Temperature (LST)
 
 Extract and convert MODIS LST data:
 
@@ -103,7 +103,7 @@ Retrieve the most recent LST image:
 
 latest_lst = modis_lst.sort("system:time_start", False).first().clip(aoi)
 
-SRTM Digital Elevation Model (DEM)
+#### SRTM Digital Elevation Model (DEM)
 
 Load and clip SRTM DEM data:
 
@@ -115,14 +115,19 @@ Display the datasets interactively using geemap:
 
 Map = geemap.Map(center=[-0.65, 36.38], zoom=10)
 Map.add_basemap("SATELLITE")
+Map.addLayer(sentinel1.select('VV'), {"min": -20, "max": 0}, "Sentinel-1 VV")
+Map.addLayer(sentinel1.select('VH'), {"min": -20, "max": 0}, "Sentinel-1 VH")
 Map.addLayer(ndvi, {"min": 0, "max": 1, "palette": ["red", "yellow", "green"]}, "Sentinel-2 NDVI")
 Map.addLayer(latest_lst, {"min": 10, "max": 50, "palette": ["blue", "yellow", "red"]}, "Land Surface Temperature")
 Map.addLayer(srtm, {"min": -50, "max": 3000}, "Elevation (SRTM)")
 Map
 
 ### 6. Resampling to Uniform Resolution
+Worked with billinier interpolation which is well-suited for continuous datasets like temperature (MODIS LST) and elevation (SRTM DEM) because it calculates pixel values based on the weighted average of the four nearest neighbors.
 
-Resample temperature and elevation data to 10m resolution:
+This results in a smoother and more realistic transition between pixels compared to nearest-neighbor interpolation, which can create blocky artifacts.
+
+Resampled temperature and elevation data to 10m resolution:
 
 resampling_method = "bilinear"
 temperature_resampled = latest_lst.resample(resampling_method).reproject(crs="EPSG:4326", scale=10).toFloat()
@@ -156,12 +161,12 @@ print("Exporting datacube to Google Drive")
 
 ## Summary
 
-This project leverages Google Earth Engine to:
+This task leverages Google Earth Engine to:
 
-Extract and preprocess geospatial data from multiple satellite sources
+1. Extract and preprocess geospatial data from multiple satellite sources
 
-Compute vegetation and temperature indices
+2. Compute vegetation and temperature indices
 
-Standardize spatial resolution across datasets
+3. Standardize spatial resolution across datasets
 
-Export a geospatial datacube for further analysis
+4. Export a geospatial datacube for further analysis
