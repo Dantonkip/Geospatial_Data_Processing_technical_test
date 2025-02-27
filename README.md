@@ -2,7 +2,7 @@
 
 ## Overview
 
-This task utilizes Google Earth Engine (GEE) to process and analyze geospatial datasets, including Sentinel-1, Sentinel-2, MODIS Land Surface Temperature (LST), and SRTM Digital Elevation Model (DEM). The workflow involves:
+This task utilizes Google Earth Engine (GEE) to process and analyze geospatial datasets over the last three months, including Sentinel-1, Sentinel-2, MODIS Land Surface Temperature (LST), and SRTM Digital Elevation Model (DEM). The workflow involves:
 
 1. Extracting satellite data within a specified area of interest (AOI)
 
@@ -23,9 +23,9 @@ The following link [Data cube](https://drive.google.com/file/d/1YG2NDaMcD8ydjWrW
 
 To run this project, you need:
 
-1. A Google Earth Engine (GEE) account
-2. Google Cloud project access
-3. Google colab since it does nor require installation of libraries since they are already installed.
+- **Google Earth Engine (GEE) account**
+- **Google Cloud project access**
+- **Google Colab** (No need for additional library installation)
 
 
 ## Getting Started
@@ -63,7 +63,7 @@ end_date = ee.Date.fromYMD(2025, 2, 25)
 
 ### 4. Load and Process Satellite Datasets
 
-#### Sentinel-1 (Radar Data)
+#### 4.1 Sentinel-1 (Radar Data)
 
 Filter by AOI, date, and polarization mode:
 
@@ -76,7 +76,7 @@ sentinel1 = (ee.ImageCollection("COPERNICUS/S1_GRD")
     .mean()
     .clip(aoi))
 
-#### Sentinel-2 (Optical Data & NDVI Calculation)
+#### 4.2 Sentinel-2 (Optical Data & NDVI Calculation)
 
 Extract cloud-free optical imagery and compute NDVI:
 
@@ -89,7 +89,7 @@ sentinel2 = (ee.ImageCollection("COPERNICUS/S2_SR")
 
 ndvi = sentinel2.normalizedDifference(["B8", "B4"]).rename("NDVI").toFloat()
 
-#### MODIS Land Surface Temperature (LST)
+#### 4.3 MODIS Land Surface Temperature (LST)
 
 Extract and convert MODIS LST data:
 
@@ -103,7 +103,7 @@ Retrieve the most recent LST image:
 
 latest_lst = modis_lst.sort("system:time_start", False).first().clip(aoi)
 
-#### SRTM Digital Elevation Model (DEM)
+#### 4.4 SRTM Digital Elevation Model (DEM)
 
 Load and clip SRTM DEM data:
 
